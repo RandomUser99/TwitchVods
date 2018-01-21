@@ -1,0 +1,7 @@
+﻿{
+    "OutputDir": "d:\\",
+    "ChannelsFilePath": "channels.txt",
+    "LimitVideos": "false",
+    "GoogleAnalyticsTrackingId": "UA-0000000000-0",
+    "TwitchApiClientId": "ZZZZAAAaaaZZZaaaZZZaaaZZZ"
+}
