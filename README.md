@@ -1,5 +1,7 @@
 # TwitchVods
-A console app which pulls all of the past broadcast data from the Twitch.tv API and creates webpages from the data.
+A console app which pulls all of the past broadcast data from the Twitch.tv API for specified channels and creates webpages from the data. 
+
+It creates pages such as this: https://tvods.se/v/lirik.html
 
 The app is built using .Net CORE 2.0.
 
