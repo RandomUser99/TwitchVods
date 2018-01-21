@@ -77,6 +77,7 @@ namespace TwitchVods.Core
 
                 Console.WriteLine("{0} Retreived: {1} of {2} ", _channel.Name, _channel.TotalVideoCount, totalVideos);
 
+                // If LimitVideos is true, it will bail out. Used for testing purposes.
                 if (_settings.LimitVideos)
                     break;
             }
