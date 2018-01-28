@@ -60,6 +60,7 @@ namespace TwitchVods.Core.Output
             await _writer.WriteAsync($"<p>Average length of broadcast: {_channel.AverageBroadcastTime}.</p>");
             await _writer.WriteAsync($"<p><a class=\"btn btn-primary btn-lg\" role=\"button\" href=\"http://twitch.tv/{channelName}\">Go to twitch.tv/{channelName} &raquo;</a></p>");
             await _writer.WriteAsync($"<p><a href=\"{_channel.Name.ToLower()}.json\">Download the raw data from this page as JSON.</a></p>");
+            await _writer.WriteAsync("<p><a href=\"https://github.com/RandomUser99/TwitchVods/\">Source code available on GitHub.</a></p>");
             await _writer.WriteAsync("</div></div>");
 
             await _writer.WriteAsync("<div class=\"container-fluid datacontent\">");
