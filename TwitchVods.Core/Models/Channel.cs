@@ -82,7 +82,7 @@ namespace TwitchVods.Core.Models
                 var averageLength = (_videos.Sum(x => x.Length) / TotalVideoCount);
                 var t = TimeSpan.FromSeconds(averageLength);
 
-                return $"{t.Hours}h:{t.Minutes}m:{t.Seconds}s";
+                return $"{t.Hours}h {t.Minutes}m {t.Seconds}s";
             }
         }
     }
