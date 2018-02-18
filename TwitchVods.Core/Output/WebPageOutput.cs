@@ -64,7 +64,7 @@ namespace TwitchVods.Core.Output
             await _writer.WriteAsync("</div></div>");
 
             await _writer.WriteAsync("<div class=\"container-fluid datacontent\">");
-            await _writer.WriteAsync("<div class=\"alert alert-danger\" role=\"alert\">You can filter by game below or search for whatever you like!</div>");
+            await _writer.WriteAsync("<div class=\"alert alert-danger\" role=\"alert\">You can filter by selecting a game from the list below or search for a game, date, day or anything you like!</div>");
             await _writer.WriteAsync(GetGamesList());
             await _writer.WriteAsync("</br>");
             await _writer.WriteAsync("<div class=\"input-group\"> <span class=\"input-group-addon input-lg\">Search</span><input id=\"filter\" type=\"text\" class=\"form-control input-lg\" placeholder=\"Type here to filter by game or any of the fields below ...\"></div></br>");
