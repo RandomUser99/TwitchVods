@@ -37,8 +37,10 @@ namespace TwitchVods.Core.Models
 
         private void AddGame(string game)
         {
-            if (!string.IsNullOrWhiteSpace(game) && !_games.Contains(game))
-                _games.Add(game);
+            var gameName = game.Trim();
+
+            if (!string.IsNullOrWhiteSpace(gameName) && !_games.Contains(gameName))
+                _games.Add(gameName);
         }
 
         public void AddVideos(IEnumerable<Video> videos)
