@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Polly;
+using Polly.Retry;
 using TwitchVods.Core.Models;
 using TwitchVods.Core.Output;
 using TwitchVods.Core.Twitch;
@@ -13,11 +15,18 @@ namespace TwitchVods.Core
         private readonly Settings _settings;
         private Channel _channel;
         private readonly MarkerFetcher _markerFetcher;
+        private readonly RetryPolicy _retryPolicy;
+        private const int MaxRetries = 5;
+        private readonly TimeSpan _pauseBetweenFailures = TimeSpan.FromSeconds(2);
 
         public Worker(Settings settings)
         {
             _settings = settings;
             _markerFetcher = new MarkerFetcher(_settings.TwitchApiClientId);
+
+            _retryPolicy = Policy
+                .Handle<WebException>()
+                .WaitAndRetryAsync(MaxRetries, i => _pauseBetweenFailures);
         }
 
         public async Task WriteChannelVideos(string channelName)
@@ -52,16 +61,18 @@ namespace TwitchVods.Core
 
             for (var offset = 0; offset < totalVideos; offset += limit)
             {
-                List<Video> retrievedVideos;
+                List<Video> retrievedVideos = null;
                 try
                 {
-                    retrievedVideos = await videoFetcher.GetVideos(_channel.Name, limit, offset);
+                    await _retryPolicy.ExecuteAsync(async () =>
+                    {
+                        retrievedVideos = await videoFetcher.GetVideos(_channel.Name, limit, offset);
+                    });
 
                     foreach (var video in retrievedVideos)
                     {
                         await GetMarkers(video);
                     }
-
                 }
                 catch (WebException exception)
                 {
@@ -85,14 +96,10 @@ namespace TwitchVods.Core
 
         private async Task GetMarkers(Video video)
         {
-            try
+            await _retryPolicy.ExecuteAsync(async () =>
             {
                 await _markerFetcher.PopulateMarkers(video);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+            });
         }
     }
 }
