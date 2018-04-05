@@ -86,11 +86,13 @@ namespace TwitchVods.Core.Models
             string tempId = data._id;
             var id = Regex.Replace(tempId, "[^0-9]+", string.Empty);
 
+            DateTime.TryParse(data.created_at.ToString(), CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime dateValue);
+
             return new Video(
                 id,
                 data.title.ToString(),
                 long.Parse(data.broadcast_id.ToString()),
-                DateTime.ParseExact(data.created_at.ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.CurrentCulture),
+                dateValue,
                 data.game.ToString() ?? "",
                 int.Parse(data.length.ToString()),
                 data.url.ToString(),
