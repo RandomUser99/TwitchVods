@@ -9,7 +9,8 @@ namespace TwitchVods.Core.Twitch
     // https://github.com/justintv/twitch-api
     public class VideoFetcher : TwitchBase
     {
-
+        private const int ThirtyMinutes = 30 * 60;
+        
         public VideoFetcher(string twitchApiClientId) : base(twitchApiClientId) { }
 
         public async Task<int> GetTotalVideoCount(string channelName)
@@ -56,7 +57,11 @@ namespace TwitchVods.Core.Twitch
                 foreach (var data in jsonData.videos)
                 {
                     var video = Video.FromJson(data);
-                    videos.Add(video);
+                    if (video.Length >= ThirtyMinutes)
+                    {
+                        videos.Add(video);
+                    }   
+
                 }
             }
             return videos;
