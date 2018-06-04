@@ -17,7 +17,6 @@ namespace TwitchVods.Core
         private readonly MarkerFetcher _markerFetcher;
         private readonly RetryPolicy _retryPolicy;
         private const int MaxRetries = 5;
-        private readonly TimeSpan _pauseBetweenFailures = TimeSpan.FromSeconds(2);
 
         public Worker(Settings settings)
         {
@@ -26,7 +25,10 @@ namespace TwitchVods.Core
 
             _retryPolicy = Policy
                 .Handle<WebException>()
-                .WaitAndRetryAsync(MaxRetries, i => _pauseBetweenFailures);
+                .WaitAndRetryAsync(
+                    MaxRetries,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
+                );
         }
 
         public async Task WriteChannelVideos(string channelName)
