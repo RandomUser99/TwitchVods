@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Polly;
 using TwitchVods.Core.Output;
 using TwitchVods.Core.Twitch;
+using TwitchVods.Core.Twitch.Kraken;
 
 namespace TwitchVods.Core
 {

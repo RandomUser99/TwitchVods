@@ -10,15 +10,17 @@ namespace TwitchVods.Core.Models
         public TimeSpan Timespan => TimeSpan.FromSeconds(TimeSeconds);
         public string TimeQueryString => $"{Timespan.Hours}h{Timespan.Minutes}m{Timespan.Seconds}s";
 
+        private Marker() { }
+
         public Marker(string label, int timeSeconds)
         {
             Label = label;
             TimeSeconds = timeSeconds;
         }
 
-        public static Marker FromJson(dynamic jsonData)
+        public static Marker Create(string label, int time)
         {
-            return new Marker(jsonData.label.ToString(), int.Parse(jsonData.time.ToString()));
+            return new Marker(label, time);
         }
     }
 }

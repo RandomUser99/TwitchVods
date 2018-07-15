@@ -1,15 +1,14 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Polly;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Polly;
 using TwitchVods.Core.Models;
-using TwitchVods.Core.Twitch.Kraken;
 
-namespace TwitchVods.Core.Twitch
+namespace TwitchVods.Core.Twitch.Kraken
 {
     internal enum TwitchApiVersion
     {
@@ -168,20 +167,19 @@ namespace TwitchVods.Core.Twitch
 
             var webResponse = await request.GetResponseAsync();
 
-            dynamic jsonData;
-
+            KrakenMarkerResponse response;
             using (var reader = new StreamReader(webResponse.GetResponseStream()))
             {
                 var readerOutput = reader.ReadToEnd();
-                jsonData = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject(readerOutput));
+                response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<KrakenMarkerResponse>(readerOutput));
             }
 
-            if (jsonData.markers.game_changes == null)
+            if (response.markers.game_changes == null)
                 return;
 
-            foreach (var data in jsonData.markers.game_changes)
+            foreach (var marker in response.markers.game_changes)
             {
-                video.AddMarker(Marker.FromJson(data));
+                video.AddMarker(Marker.Create(marker.label, marker.time));
             }
         }
     }
