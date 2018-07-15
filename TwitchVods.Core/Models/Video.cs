@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
-using TwitchVods.Core.Twitch.Kraken;
 
 namespace TwitchVods.Core.Models
 {
@@ -11,27 +8,32 @@ namespace TwitchVods.Core.Models
     {
         private readonly IList<Marker> _markers = new List<Marker>();
 
-        public string Id { get; }
-        public string Title { get; }
-        public long? BroadcastId { get; }
-        public DateTime CreatedAt { get; }
-        public string Game { get; }
-        public int Length { get; }
-        public string Url { get; }
-        public int Views { get; }
+        public string Id { get; private set; }
+        public string Title { get; private set; }
+        public long? BroadcastId { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public string Game { get; private set; }
+        public int Length { get; private set; }
+        public string Url { get; private set; }
+        public int Views { get; private set; }
 
         public IEnumerable<Marker> Markers => _markers.OrderBy(x => x.TimeSeconds).ToList();
 
-        public Video(string id, string title, dynamic broadcastId, DateTime createdAt, string game, int length, string url, int views)
+        private Video() { }
+
+        public static Video Create(string id, string title, long? broadcastId, DateTime createdAt, string game, int length, string url, int views)
         {
-            Id = id;
-            Title = title;
-            BroadcastId = broadcastId;
-            CreatedAt = createdAt;
-            Game = game;
-            Length = length;
-            Url = url;
-            Views = views;
+            return new Video
+            {
+                Id =  id, 
+                Title = title,
+                BroadcastId = broadcastId,
+                CreatedAt = createdAt,
+                Game = game,
+                Length = length,
+                Url = url, 
+                Views = views
+            };
         }
 
         public string RunTime
@@ -80,24 +82,6 @@ namespace TwitchVods.Core.Models
             var secondsRemaining = second - first;
             var overFiveMins = secondsRemaining > 300;
             return overFiveMins;
-        }
-
-        public static Video From(KrakenVideoResponse.KrakenVideo krakenVideo)
-        {
-            var id = Regex.Replace(krakenVideo._id, "[^0-9]+", string.Empty);
-
-            DateTime.TryParse(krakenVideo.created_at.ToString(), CultureInfo.CurrentCulture, DateTimeStyles.None, out var dateValue);
-
-            return new Video(
-                id,
-                krakenVideo.title,
-                long.Parse(krakenVideo.broadcast_id.ToString()),
-                dateValue,
-                krakenVideo.game ?? "",
-                int.Parse(krakenVideo.length.ToString()),
-                krakenVideo.url,
-                int.Parse(krakenVideo.views.ToString())
-            );
         }
     }
 }

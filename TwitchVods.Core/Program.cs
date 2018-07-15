@@ -1,12 +1,11 @@
 ﻿using Newtonsoft.Json;
+using Polly;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Polly;
 using TwitchVods.Core.Output;
-using TwitchVods.Core.Twitch;
 using TwitchVods.Core.Twitch.Kraken;
 
 namespace TwitchVods.Core

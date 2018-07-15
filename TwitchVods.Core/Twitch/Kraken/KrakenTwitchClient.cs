@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -103,11 +105,11 @@ namespace TwitchVods.Core.Twitch.Kraken
 
         public async Task<Channel> GetChannelVideosAsync()
         {
-            var channel = new Channel(_channelName);
+            var channel = Channel.Create(_channelName);
 
             var totalVideos = await _retryRetryPolicy.ExecuteAsync(async () => await GetTotalVideoCountAsync());
 
-            const int limit = 100;
+            const int limit = 50;
 
             for (var offset = 0; offset < totalVideos; offset += limit)
             {
@@ -152,7 +154,13 @@ namespace TwitchVods.Core.Twitch.Kraken
 
                 foreach (var data in response.videos)
                 {
-                    var video = Video.From(data);
+                    var id = Regex.Replace(data._id, "[^0-9]+", string.Empty);
+
+                    DateTime.TryParse(data.created_at.ToString(), CultureInfo.CurrentCulture, DateTimeStyles.None, out var dateValue);
+
+
+                    var broadcastId = long.Parse(data.broadcast_id.ToString());
+                    var video = Video.Create(id, data.title, broadcastId, dateValue, data.game, data.length, data.url, data.views);
                     videos.Add(video);
                 }
             }

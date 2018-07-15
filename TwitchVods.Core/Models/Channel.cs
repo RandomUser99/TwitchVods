@@ -6,7 +6,7 @@ namespace TwitchVods.Core.Models
 {
     internal class Channel
     {
-        public string Name { get; }
+        public string Name { get; private set; }
         private readonly IList<string> _games = new List<string>();
         private readonly IList<Video> _videos = new List<Video>();
         public DateTime DateGenerated => DateTime.Now;
@@ -14,9 +14,11 @@ namespace TwitchVods.Core.Models
         public IEnumerable<Video> Videos => _videos;
         public IEnumerable<string> Games => _games.OrderBy(x => x);
 
-        public Channel(string name)
+        private Channel() { }
+
+        public static Channel Create(string name)
         {
-            Name = name;
+            return new Channel { Name = name };
         }
 
         public void AddVideoRange(IEnumerable<Video> videos)
