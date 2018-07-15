@@ -27,14 +27,22 @@ namespace TwitchVods.Core
 
             var channels = await GetChannelsFromFile(settings);
 
-            Console.WriteLine($"{channels.Length} channel(s) found in channels.txt file.");
+            Console.WriteLine($"{channels.Length} channel(s) found in channels.txt file:");
+            foreach (var channel in channels)
+            {
+                Console.WriteLine(channel);
+            }
+
             Console.WriteLine();
+            Console.WriteLine("Fetching archive videos ....");
+
+            var retryPolicy = GetRetryPolicy();
 
             foreach (var channelName in channels)
             {
                 try
                 {
-                    tasks.Add(Task.Run(() => WriteChannelVideos(channelName.ToUpper(), settings)));
+                    tasks.Add(Task.Run(() => WriteChannelVideos(channelName.ToUpper(), settings, retryPolicy)));
                 }
                 catch (Exception e)
                 {
@@ -68,17 +76,15 @@ namespace TwitchVods.Core
             }
         }
 
-        private static async Task WriteChannelVideos(string channelName, Settings settings)
+        private static async Task WriteChannelVideos(string channelName, Settings settings, IAsyncPolicy retryPolicy)
         {
-            var client = new KrakenTwitchClient(channelName, settings, GetRetryPolicy());
+            var client = new KrakenTwitchClient(channelName, settings, retryPolicy);
 
             var channel = await client.GetChannelVideosAsync();
 
-            var archiveWriter = new WebPageOutput(channel, settings);
-            await archiveWriter.WriteOutputAsync();
+            await new WebPageOutput(channel, settings).WriteOutputAsync();
 
-            var jsonWriter = new JsonFileOutput(channel, settings);
-            jsonWriter.WriteOutput();
+            new JsonFileOutput(channel, settings).WriteOutput();
         }
 
         private static IAsyncPolicy GetRetryPolicy()

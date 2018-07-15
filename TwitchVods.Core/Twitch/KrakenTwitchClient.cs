@@ -107,7 +107,7 @@ namespace TwitchVods.Core.Twitch
 
             var totalVideos = await _retryRetryPolicy.ExecuteAsync(async () => await GetTotalVideoCountAsync());
 
-            const int limit = 50;
+            const int limit = 100;
 
             for (var offset = 0; offset < totalVideos; offset += limit)
             {
