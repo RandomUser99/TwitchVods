@@ -1,5 +1,5 @@
-﻿using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.IO;
 using TwitchVods.Core.Models;
 
 namespace TwitchVods.Core.Output

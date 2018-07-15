@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Polly;
+using Polly.Retry;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Polly;
-using Polly.Retry;
 using TwitchVods.Core.Models;
 using TwitchVods.Core.Output;
 using TwitchVods.Core.Twitch;

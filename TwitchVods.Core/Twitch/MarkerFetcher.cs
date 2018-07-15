@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using Newtonsoft.Json;
+using System.IO;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using TwitchVods.Core.Models;
 
 namespace TwitchVods.Core.Twitch

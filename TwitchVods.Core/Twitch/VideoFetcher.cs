@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using TwitchVods.Core.Models;
 
 namespace TwitchVods.Core.Twitch
@@ -9,7 +9,6 @@ namespace TwitchVods.Core.Twitch
     // https://github.com/justintv/twitch-api
     public class VideoFetcher : TwitchBase
     {
-
         public VideoFetcher(string twitchApiClientId) : base(twitchApiClientId) { }
 
         public async Task<int> GetTotalVideoCount(string channelName)
