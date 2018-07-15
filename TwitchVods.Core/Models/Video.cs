@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using TwitchVods.Core.Twitch.Kraken;
 
 namespace TwitchVods.Core.Models
 {
@@ -81,23 +82,22 @@ namespace TwitchVods.Core.Models
             return overFiveMins;
         }
 
-        public static Video FromJson(dynamic data)
+        public static Video From(KrakenVideoResponse.KrakenVideo krakenVideo)
         {
-            string tempId = data._id;
-            var id = Regex.Replace(tempId, "[^0-9]+", string.Empty);
+            var id = Regex.Replace(krakenVideo._id, "[^0-9]+", string.Empty);
 
-            DateTime.TryParse(data.created_at.ToString(), CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime dateValue);
+            DateTime.TryParse(krakenVideo.created_at.ToString(), CultureInfo.CurrentCulture, DateTimeStyles.None, out var dateValue);
 
             return new Video(
                 id,
-                data.title.ToString(),
-                long.Parse(data.broadcast_id.ToString()),
+                krakenVideo.title,
+                long.Parse(krakenVideo.broadcast_id.ToString()),
                 dateValue,
-                data.game.ToString() ?? "",
-                int.Parse(data.length.ToString()),
-                data.url.ToString(),
-                int.Parse(data.views.ToString())
-                );
+                krakenVideo.game ?? "",
+                int.Parse(krakenVideo.length.ToString()),
+                krakenVideo.url,
+                int.Parse(krakenVideo.views.ToString())
+            );
         }
     }
 }

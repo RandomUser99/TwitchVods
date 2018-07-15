@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using TwitchVods.Core.Models;
+using TwitchVods.Core.Twitch.Kraken;
 
 namespace TwitchVods.Core.Twitch
 {
@@ -148,11 +149,11 @@ namespace TwitchVods.Core.Twitch
             using (var reader = new StreamReader(webResponse.GetResponseStream()))
             {
                 var readerOutput = await reader.ReadToEndAsync();
-                dynamic jsonData = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject(readerOutput));
+                var response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<KrakenVideoResponse>(readerOutput));
 
-                foreach (var data in jsonData.videos)
+                foreach (var data in response.videos)
                 {
-                    var video = Video.FromJson(data);
+                    var video = Video.From(data);
                     videos.Add(video);
                 }
             }
