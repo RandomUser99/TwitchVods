@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Polly;
 using TwitchVods.Core.Output;
 using TwitchVods.Core.Twitch;
 
@@ -69,7 +70,7 @@ namespace TwitchVods.Core
 
         private static async Task WriteChannelVideos(string channelName, Settings settings)
         {
-            var client = new KrakenTwitchClient(channelName, settings);
+            var client = new KrakenTwitchClient(channelName, settings, GetRetryPolicy());
 
             var channel = await client.GetChannelVideosAsync();
 
@@ -78,6 +79,16 @@ namespace TwitchVods.Core
 
             var jsonWriter = new JsonFileOutput(channel, settings);
             jsonWriter.WriteOutput();
+        }
+
+        private static IAsyncPolicy GetRetryPolicy()
+        {
+            const int maxRetries = 10;
+
+            return Policy.Handle<Exception>()
+                .WaitAndRetryAsync(
+                    maxRetries,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
     }
 }

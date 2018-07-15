@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Polly;
-using Polly.Retry;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,8 +21,7 @@ namespace TwitchVods.Core.Twitch
         private readonly string _channelName;
         private readonly Settings _settings;
         private string _channelUserId;
-        private readonly RetryPolicy _retryPolicy;
-        private const int MaxRetries = 10;
+        private readonly IAsyncPolicy _retryRetryPolicy;
 
         private static string BaseUrl => "https://api.twitch.tv/kraken";
 
@@ -37,19 +35,18 @@ namespace TwitchVods.Core.Twitch
             return $"{BaseUrl}/videos/{videoId}/markers?api_version=5";
         }
 
-        public KrakenTwitchClient(string channelName, Settings settings)
+        public KrakenTwitchClient(string channelName, Settings settings, IAsyncPolicy retryPolicy)
         {
-            _channelName = channelName;
-            _settings = settings;
+            _channelName = channelName ?? throw new ArgumentNullException();
+
+            if (string.IsNullOrWhiteSpace(_channelName))
+                throw new ArgumentNullException();
+
+            _settings = settings ?? throw new ArgumentNullException();
+            _retryRetryPolicy = retryPolicy ?? throw new ArgumentNullException();
 
             if (string.IsNullOrEmpty(_channelUserId))
                 SetUserId();
-
-            _retryPolicy = Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(
-                    MaxRetries,
-                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
         private void SetUserId()
@@ -108,17 +105,17 @@ namespace TwitchVods.Core.Twitch
         {
             var channel = new Channel(_channelName);
 
-            var totalVideos = await _retryPolicy.ExecuteAsync(async () => await GetTotalVideoCountAsync());
+            var totalVideos = await _retryRetryPolicy.ExecuteAsync(async () => await GetTotalVideoCountAsync());
 
             const int limit = 50;
 
             for (var offset = 0; offset < totalVideos; offset += limit)
             {
-                var retrievedVideos = await _retryPolicy.ExecuteAsync(async () => await GetVideosAsync(limit, offset));
+                var retrievedVideos = await _retryRetryPolicy.ExecuteAsync(async () => await GetVideosAsync(limit, offset));
 
                 foreach (var video in retrievedVideos)
                 {
-                    await _retryPolicy.ExecuteAsync(async () =>
+                    await _retryRetryPolicy.ExecuteAsync(async () =>
                    {
                        await PopulateMarkersAsync(video);
                    });
