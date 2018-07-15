@@ -16,7 +16,7 @@ namespace TwitchVods.Core
         private Channel _channel;
         private readonly MarkerFetcher _markerFetcher;
         private readonly RetryPolicy _retryPolicy;
-        private const int MaxRetries = 5;
+        private const int MaxRetries = 10;
 
         public Worker(Settings settings)
         {
@@ -24,7 +24,7 @@ namespace TwitchVods.Core
             _markerFetcher = new MarkerFetcher(_settings.TwitchApiClientId);
 
             _retryPolicy = Policy
-                .Handle<WebException>()
+                .Handle<Exception>()
                 .WaitAndRetryAsync(
                     MaxRetries,
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
@@ -51,7 +51,7 @@ namespace TwitchVods.Core
 
             try
             {
-                totalVideos = await videoFetcher.GetTotalVideoCount(_channel.Name);
+                totalVideos = await _retryPolicy.ExecuteAsync(async () => await videoFetcher.GetTotalVideoCount(_channel.Name));
             }
             catch (WebException exception)
             {
@@ -63,13 +63,10 @@ namespace TwitchVods.Core
 
             for (var offset = 0; offset < totalVideos; offset += limit)
             {
-                List<Video> retrievedVideos = null;
+                List<Video> retrievedVideos;
                 try
                 {
-                    await _retryPolicy.ExecuteAsync(async () =>
-                    {
-                        retrievedVideos = await videoFetcher.GetVideos(_channel.Name, limit, offset);
-                    });
+                    retrievedVideos = await _retryPolicy.ExecuteAsync(async () => await videoFetcher.GetVideos(_channel.Name, limit, offset));
 
                     foreach (var video in retrievedVideos)
                     {
