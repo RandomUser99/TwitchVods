@@ -4,7 +4,7 @@ using TwitchVods.Core.Models;
 
 namespace TwitchVods.Core.Output
 {
-    public class JsonFileOutput 
+    internal class JsonFileOutput 
     {
         private readonly Channel _channel;
         private readonly Settings _settings;

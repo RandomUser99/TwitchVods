@@ -7,7 +7,7 @@ using TwitchVods.Core.Models;
 
 namespace TwitchVods.Core.Output
 {
-    public class WebPageOutput : IOutputWriter
+    internal class WebPageOutput : IOutputWriter
     {
         private StreamWriter _writer;
         private readonly Channel _channel;

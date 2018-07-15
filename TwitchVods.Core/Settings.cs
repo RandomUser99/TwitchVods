@@ -1,6 +1,6 @@
 ﻿namespace TwitchVods.Core
 {
-    public class Settings
+    internal class Settings
     {
         public string OutputDir { get; set; }
         public string ChannelsFilePath { get; set; }

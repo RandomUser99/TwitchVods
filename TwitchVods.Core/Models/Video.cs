@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace TwitchVods.Core.Models
 {
-    public class Video
+    internal class Video
     {
         private readonly IList<Marker> _markers = new List<Marker>();
 

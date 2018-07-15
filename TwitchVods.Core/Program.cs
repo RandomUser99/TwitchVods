@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TwitchVods.Core.Output;
+using TwitchVods.Core.Twitch;
 
 namespace TwitchVods.Core
 {
@@ -11,7 +13,7 @@ namespace TwitchVods.Core
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("TwitchTool, starting");
+            Console.WriteLine("TwitchTool, starting ....");
 
             MainAsync().Wait();
         }
@@ -22,10 +24,21 @@ namespace TwitchVods.Core
 
             var tasks = new List<Task>();
 
-            foreach (var channelName in await GetChannelsFromFile(settings))
+            var channels = await GetChannelsFromFile(settings);
+
+            Console.WriteLine($"{channels.Length} channel(s) found in channels.txt file.");
+            Console.WriteLine();
+
+            foreach (var channelName in channels)
             {
-                tasks.Add(Task.Run(() => new Worker(settings)
-                    .WriteChannelVideos(channelName.ToUpper())));
+                try
+                {
+                    tasks.Add(Task.Run(() => WriteChannelVideos(channelName.ToUpper(), settings)));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             await Task.WhenAll(tasks);
@@ -40,8 +53,8 @@ namespace TwitchVods.Core
             }
 
             return fileContent.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
-                .ToList()
-                .Where(x => !x.StartsWith("//")).ToArray();
+                            .ToList()
+                            .Where(x => !x.StartsWith("//")).ToArray();
         }
 
         private static Settings GetSettings()
@@ -52,6 +65,19 @@ namespace TwitchVods.Core
             {
                 return JsonConvert.DeserializeObject<Settings>(reader.ReadToEnd());
             }
+        }
+
+        private static async Task WriteChannelVideos(string channelName, Settings settings)
+        {
+            var client = new KrakenTwitchClient(channelName, settings);
+
+            var channel = await client.GetChannelVideosAsync();
+
+            var archiveWriter = new WebPageOutput(channel, settings);
+            await archiveWriter.WriteOutputAsync();
+
+            var jsonWriter = new JsonFileOutput(channel, settings);
+            jsonWriter.WriteOutput();
         }
     }
 }

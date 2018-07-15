@@ -2,7 +2,7 @@
 
 namespace TwitchVods.Core.Models
 {
-    public class Marker
+    internal class Marker
     {
         public string Label { get; }
         public int TimeSeconds { get; }
