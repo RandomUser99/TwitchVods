@@ -29,6 +29,9 @@ namespace TwitchVods.Core.Models
 
         public void AddVideo(Video video)
         {
+            if (video == null)
+                return;
+
             _videos.Add(video);
 
             AddGame(video.Game);
@@ -39,6 +42,9 @@ namespace TwitchVods.Core.Models
 
         private void AddGame(string game)
         {
+            if (string.IsNullOrEmpty(game))
+                return;
+
             var gameName = game.Trim();
 
             if (!string.IsNullOrWhiteSpace(gameName) && !_games.Contains(gameName))
