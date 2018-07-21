@@ -67,9 +67,9 @@ namespace TwitchVods.Core.Models
         {
             get
             {
-                var t = TimeSpan.FromSeconds(_videos.Sum(x => x.Length));
+                var timeSpan = TimeSpan.FromSeconds(_videos.Sum(x => x.Length));
 
-                return Convert.ToInt32(t.TotalHours);
+                return Convert.ToInt32(timeSpan.TotalHours);
             }
         }
 
@@ -77,9 +77,9 @@ namespace TwitchVods.Core.Models
         {
             get
             {
-                var t = TimeSpan.FromSeconds(_videos.Sum(x => x.Length));
+                var timeSpan = TimeSpan.FromSeconds(_videos.Sum(x => x.Length));
 
-                return Convert.ToInt32(t.TotalHours) / 24;
+                return Convert.ToInt32(timeSpan.TotalHours) / 24;
             }
         }
 
@@ -88,9 +88,9 @@ namespace TwitchVods.Core.Models
             get
             {
                 var averageLength = (_videos.Sum(x => x.Length) / TotalVideoCount);
-                var t = TimeSpan.FromSeconds(averageLength);
+                var timeSpan = TimeSpan.FromSeconds(averageLength);
 
-                return $"{t.Hours}h {t.Minutes}m {t.Seconds}s";
+                return $"{timeSpan.Hours}h {timeSpan.Minutes}m {timeSpan.Seconds}s";
             }
         }
     }

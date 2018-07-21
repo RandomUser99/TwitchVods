@@ -40,8 +40,8 @@ namespace TwitchVods.Core.Models
         {
             get
             {
-                var t = TimeSpan.FromSeconds(Length);
-                return $"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}";
+                var timeSpan = TimeSpan.FromSeconds(Length);
+                return $"{timeSpan.Hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
             }
         }
 
