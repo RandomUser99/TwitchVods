@@ -11,5 +11,6 @@
         public bool LimitVideos { get; set; }
         public string GoogleAnalyticsTrackingId { get; set; }
         public string TwitchApiClientId { get; set; }
+        public string RedditUsername { get; set; }
     }
 }
