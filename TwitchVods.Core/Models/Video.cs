@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TwitchVods.Core.Models
 {
-    internal class Video
+    public class Video
     {
         private readonly IList<Marker> _markers = new List<Marker>();
 

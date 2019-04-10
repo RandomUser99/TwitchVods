@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TwitchVods.Core.Models
 {
-    internal class Channel
+    public class Channel
     {
         public string Name { get; private set; }
         private readonly IList<string> _games = new List<string>();

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TwitchVods.Core.Output;
+using TwitchVods.Core.Templates;
 using TwitchVods.Core.Twitch.Kraken;
 
 namespace TwitchVods.Core
@@ -50,6 +51,8 @@ namespace TwitchVods.Core
                 }
             }
 
+            await WriteIndexPageAsync(channels, settings.OutputDir);
+
             await Task.WhenAll(tasks);
         }
 
@@ -85,6 +88,17 @@ namespace TwitchVods.Core
             await new WebPageOutput(channel, settings).WriteOutputAsync();
 
             new JsonFileOutput(channel, settings).WriteOutput();
+        }
+
+        private static async Task WriteIndexPageAsync(string[] channels, string outputPath)
+        {
+            var htmlGeneratory = new IndexGenerator();
+            var markup = await htmlGeneratory.GenerateMarkupAsync(new IndexModel { Channels = channels });
+
+            using (var indexFile = new StreamWriter($"{outputPath}/index.html")) {
+                await indexFile.WriteAsync(markup);
+                await indexFile.FlushAsync();
+            }
         }
 
         private static IAsyncPolicy GetRetryPolicy()
