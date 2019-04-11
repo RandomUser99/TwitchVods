@@ -2,6 +2,7 @@
 using RazorLight.Caching;
 using System.IO;
 using System.Threading.Tasks;
+using TwitchVods.Core.Templates;
 
 namespace TwitchVods.Core
 {
@@ -14,10 +15,9 @@ namespace TwitchVods.Core
             _razorEngine = GetRazorEngine();
         }
 
-        public async Task<string> GenerateMarkupAsync(Templates.IndexModel indexModel)
+        public async Task<string> GenerateMarkupAsync(IndexModel model)
         {
-            var currentDir = Directory.GetCurrentDirectory();
-            return await _razorEngine.CompileRenderAsync("Templates/Index.cshtml",  indexModel);
+            return await _razorEngine.CompileRenderAsync("Templates/Index.cshtml",  model);
         }
 
 

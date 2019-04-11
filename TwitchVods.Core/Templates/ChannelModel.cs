@@ -6,6 +6,6 @@ namespace TwitchVods.Core.Templates
     {
         public Channel Channel { get; set; }
         public string GoogleAnalyticsTrackingId { get; set; }
-        public string RedditUsername { get; set; }
+        public string TwitterHandle { get; set; }
     }
 }

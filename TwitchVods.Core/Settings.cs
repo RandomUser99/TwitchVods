@@ -12,5 +12,6 @@
         public string GoogleAnalyticsTrackingId { get; set; }
         public string TwitchApiClientId { get; set; }
         public string RedditUsername { get; set; }
+        public string TwitterHandle { get; set; }
     }
 }

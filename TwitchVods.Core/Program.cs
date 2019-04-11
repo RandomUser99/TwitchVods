@@ -85,7 +85,21 @@ namespace TwitchVods.Core
 
             var channel = await client.GetChannelVideosAsync();
 
-            await new WebPageOutput(channel, settings).WriteOutputAsync();
+            //await new WebPageOutput(channel, settings).WriteOutputAsync();
+            var model = new ChannelModel
+            {
+                Channel = channel,
+                GoogleAnalyticsTrackingId = settings.GoogleAnalyticsTrackingId,
+                TwitterHandle = settings.TwitterHandle,
+            };
+
+            var markup = await new ChannelGenerator().GenerateMarkupAsync(model);
+
+            using (var outputFile = new StreamWriter($"{settings.OutputDir}/{channelName.ToLower()}.html"))
+            {
+                await outputFile.WriteAsync(markup);
+                await outputFile.FlushAsync();
+            }
 
             new JsonFileOutput(channel, settings).WriteOutput();
         }
@@ -95,7 +109,8 @@ namespace TwitchVods.Core
             var htmlGeneratory = new IndexGenerator();
             var markup = await htmlGeneratory.GenerateMarkupAsync(new IndexModel { Channels = channels });
 
-            using (var indexFile = new StreamWriter($"{outputPath}/index.html")) {
+            using (var indexFile = new StreamWriter($"{outputPath}/index.html"))
+            {
                 await indexFile.WriteAsync(markup);
                 await indexFile.FlushAsync();
             }

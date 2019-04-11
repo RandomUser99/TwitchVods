@@ -1,9 +1,10 @@
-﻿@using RazorLight
+﻿@using RazorLight;
 @inherits TemplatePage<TwitchVods.Core.Templates.ChannelModel>
+
 <html>
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=@Model.GoogleAnalyticsTrackingId"></script>
-    <script>window.dataLayer = window.dataLayer || [];function gtag(){{dataLayer.push(arguments);}}gtag('js', new Date());gtag('config', '@Model.GoogleAnalyticsTrackingId');</script>
+    <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '@Model.GoogleAnalyticsTrackingId');</script>
     <title>@Model.Channel.Name - Past Broadcasts</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
@@ -13,33 +14,118 @@
 
     <div class="jumbotron">
         <div class="container-fluid">
-            <h1>twitch.tv/@Model.Channel.Name - past broadcasts</h1>
-            <p>This page lists all @(Model.Channel.TotalVideoCount:n0) of the past broadcasts for the channel twitch.tv/@Model.Channel.Name.</p></p>
-            <p>Total video views: @(Model.Channel.TotalViewCount:n0).</p>
-            <p>Total games played: @(Model.Channel..TotalGamesCount:n0).</p>
-            <p>Total broadcast hours: @(Model.Channel.TotalBroadcastHours:n0) (@(Model.Channel.TotalBroadcastDays) days).</p>
-            <p>Average length of broadcast: @Model.Channel..AverageBroadcastTime}.</p>
-            <p><a class="btn btn-primary btn-lg" role="button" href="http://twitch.tv/{channelName}">Go to twitch.tv/@(Model.Channel.ToLower()) &raquo;</a></p>
+            <h1>twitch.tv/@Model.Channel.Name.ToLower() - past broadcasts</h1>
+            <p>This page lists all @Model.Channel.TotalVideoCount.ToString("n0") of the past broadcasts for the channel twitch.tv/@Model.Channel.Name.</p>
+            <p>Total video views: @Model.Channel.TotalViewCount.ToString("n0").</p>
+            <p>Total games played: @Model.Channel.TotalGamesCount.ToString("n0").</p>
+            <p>Total broadcast hours: @Model.Channel.TotalBroadcastHours.ToString("n0") (@(Model.Channel.TotalBroadcastDays) days).</p>
+            <p>Average length of broadcast: @Model.Channel.AverageBroadcastTime.</p>
+            <p><a class="btn btn-primary btn-lg" role="button" href="http://twitch.tv/@Model.Channel.Name">Go to twitch.tv/@(Model.Channel.Name.ToLower()) &raquo;</a></p>
             <p><a href="@(Model.Channel.Name.ToLower()).json">Download the raw data from this page as JSON.</a></p>
             <p><a href="https://github.com/RandomUser99/TwitchVods/">Source code available on GitHub.</a></p>
 
-            @if (!string.IsNullOrWhiteSpace(@Model.RedditUsername))
+            @if (!string.IsNullOrWhiteSpace(@Model.TwitterHandle))
             {
-                var redditLink = System.Web.HttpUtility.HtmlEncode($"https://reddit.com/message/compose?to={_settings.RedditUsername}&subject=tvods");
-                <p><a href="{redditLink}">Contact me on Reddit.</a></p>
+                <p><a href="https://twitter.com/@Model.TwitterHandle">Contact me on Twitter</a></p>
             }
         </div>
     </div>
 
-    <div class="container">
-        <div class="list-group">
-            @foreach (var channel in Model.Channels.OrderBy(x => x))
-            {
-            <a href="/v/@(channel.ToLower()).html" class="list-group-item">
-                <h4>@channel</h4>
-            </a>
-            }
+    <div class="container-fluid datacontent">
+        <div class="alert alert-danger" role="alert">You can filter by selecting a game from the list below or search for a game, date, day or anything you like!</div>
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="select-addon">Select a game</span>
+            </div>
+            <select id="gamesList" class="form-control" aria-describedby="select-addon">
+                <option selected>View all games</option>
+                @foreach (var game in Model.Channel.Games)
+                {
+                    <option>@game</option>
+                }
+            </select>
         </div>
+
+        <br />
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="search-addon">Search</span>
+            </div>
+            <input id="filter" type="text" class="form-control input-lg" placeholder="Type here to filter by game or any of the fields below ..." aria-describedby="search-addon">
+        </div>
+
+        <br />
+
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Day</th>
+                    <th scope="col">Time (UTC)</th>
+                    <th scope="col">Game</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Runtime</th>
+                    <th scope="col">Views</th>
+                </tr>
+            </thead>
+            <tbody class="searchable">
+                @foreach (var video in Model.Channel.Videos)
+                {
+                    <tr class="table-primary">
+                        <td>@video.CreatedAt.ToUniversalTime().ToString("yyyy-MM-dd")</td>
+                        <td>@video.CreatedAt.DayOfWeek</td>
+                        <td>@video.CreatedAt.ToUniversalTime().ToString("HH: mm")</td>
+                        <td>@video.Game</td>
+                        <td><a href="@video.Url">@video.Title</a></td>
+                        <td>@video.RunTime</td>
+                        <td>@video.Views</td>
+                    </tr>
+
+                    if (!video.Markers.Any())
+                    {
+                        continue;
+                    }
+
+                    foreach (var marker in video.Markers)
+                    {
+                        <tr class="table-secondary">
+                            <td>@video.CreatedAt.ToUniversalTime().ToString("yyyy-MM-dd")</td>
+                            <td>@video.CreatedAt.DayOfWeek</td>
+                            <td>@video.CreatedAt.AddSeconds(@marker.TimeSeconds).ToUniversalTime().ToString("HH: mm")</td>
+                            <td>@marker.Label</td>
+
+                            <td><a href="@video.Url?t=@marker.TimeQueryString">Game change</a></td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        <p>Page generated: @DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") UTC</p>
+
     </div>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            !function (e) {
+                e("#filter").keyup(function () {
+                    var t = new RegExp(e(this).val(), "i"); e(".searchable tr").hide(), e(".searchable tr").filter(function () {
+                        return t.test(e(this).text())
+                    }).show()
+                }), e("#gamesList").change(function () {
+                    var t = e("option:selected", this).text(), r = new RegExp(t); "/View all games/" == r ? (console.log("show all"), e(".searchable tr").show()) : (e(".searchable tr").hide(), e(".searchable tr").filter(function () {
+                        return r.test(e(this).text())
+                    }).show())
+                })
+            }(jQuery)
+        });
+    </script>
 </body>
 </html>
