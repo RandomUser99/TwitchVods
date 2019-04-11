@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TwitchVods.Core.Output;
 using TwitchVods.Core.Templates;
 using TwitchVods.Core.Twitch.Kraken;
+using WebMarkupMin.Core;
 
 namespace TwitchVods.Core
 {
@@ -85,7 +86,6 @@ namespace TwitchVods.Core
 
             var channel = await client.GetChannelVideosAsync();
 
-            //await new WebPageOutput(channel, settings).WriteOutputAsync();
             var model = new ChannelModel
             {
                 Channel = channel,
@@ -95,9 +95,15 @@ namespace TwitchVods.Core
 
             var markup = await new ChannelGenerator().GenerateMarkupAsync(model);
 
+            var minifier = new HtmlMinifier();
+            var compressionResult = minifier.Minify(markup);
+
+            if (compressionResult.Errors.Any())
+                return;
+
             using (var outputFile = new StreamWriter($"{settings.OutputDir}/{channelName.ToLower()}.html"))
             {
-                await outputFile.WriteAsync(markup);
+                await outputFile.WriteAsync(compressionResult.MinifiedContent);
                 await outputFile.FlushAsync();
             }
 
