@@ -5,6 +5,6 @@ namespace TwitchVods.Core.Twitch
 {
     internal interface ITwitchClient
     {
-        Task<Channel> GetChannelVideosAsync();
+        Task<Channel> ChannelVideosAsync();
     }
 }

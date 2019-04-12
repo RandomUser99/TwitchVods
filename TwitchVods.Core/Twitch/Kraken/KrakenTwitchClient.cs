@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Polly;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Polly;
 using TwitchVods.Core.Models;
 
 namespace TwitchVods.Core.Twitch.Kraken
@@ -103,7 +103,7 @@ namespace TwitchVods.Core.Twitch.Kraken
             return count;
         }
 
-        public async Task<Channel> GetChannelVideosAsync()
+        public async Task<Channel> ChannelVideosAsync()
         {
             var channel = Channel.Create(_channelName);
 

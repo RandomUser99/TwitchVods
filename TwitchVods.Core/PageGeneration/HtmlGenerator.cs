@@ -2,26 +2,24 @@
 using RazorLight.Caching;
 using System.IO;
 using System.Threading.Tasks;
-using TwitchVods.Core.Templates;
 
-namespace TwitchVods.Core
+namespace TwitchVods.Core.PageGeneration
 {
-    internal class IndexGenerator
+    internal class HtmlGenerator
     {
         private readonly IRazorLightEngine _razorEngine;
 
-        public IndexGenerator()
+        public HtmlGenerator()
         {
-            _razorEngine = GetRazorEngine();
+            _razorEngine = Initialise();
         }
 
-        public async Task<string> GenerateMarkupAsync(IndexModel model)
+        public async Task<string> GenerateMarkupAsync<T>(T model, string templatePath)
         {
-            return await _razorEngine.CompileRenderAsync("Templates/Index.cshtml",  model);
+            return await _razorEngine.CompileRenderAsync(templatePath, model);
         }
 
-
-        private static IRazorLightEngine GetRazorEngine()
+        private static IRazorLightEngine Initialise()
         {
             var currentDir = Directory.GetCurrentDirectory();
 

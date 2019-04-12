@@ -1,14 +1,11 @@
-﻿using Newtonsoft.Json;
-using Polly;
+﻿using Polly;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using TwitchVods.Core.Models;
 using TwitchVods.Core.Output;
-using TwitchVods.Core.Templates;
+using TwitchVods.Core.PageGeneration;
 using TwitchVods.Core.Twitch.Kraken;
-using WebMarkupMin.Core;
 
 namespace TwitchVods.Core
 {
@@ -23,13 +20,11 @@ namespace TwitchVods.Core
 
         private static async Task MainAsync()
         {
-            var settings = GetSettings();
-
-            var tasks = new List<Task>();
-
-            var channels = await GetChannelsFromFile(settings);
+            var settings = Settings.FromFile();
+            var channels = await Channels.FromFileAsync(settings.ChannelsFilePath);
 
             Console.WriteLine($"{channels.Length} channel(s) found in channels.txt file:");
+
             foreach (var channel in channels)
             {
                 Console.WriteLine(channel);
@@ -38,13 +33,25 @@ namespace TwitchVods.Core
             Console.WriteLine();
             Console.WriteLine("Fetching archive videos ....");
 
-            var retryPolicy = GetRetryPolicy();
+            await ProcessWorkload(channels, settings);
+        }
+
+        private static async Task ProcessWorkload(string[] channels, Settings settings)
+        {
+            var retryPolicy = Policies.RetryPolicy();
+            var pageCreator = new PageCreator();
+            var tasks = new List<Task>();
 
             foreach (var channelName in channels)
             {
                 try
                 {
-                    tasks.Add(Task.Run(() => WriteChannelVideos(channelName.ToUpper(), settings, retryPolicy)));
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        var channel = await ChannelVideos(channelName.ToUpper(), settings, retryPolicy);
+                        await pageCreator.CreateChannelPageAsync(channel, settings);
+                        new JsonFileOutput(channel, settings).WriteOutput();
+                    }));
                 }
                 catch (Exception e)
                 {
@@ -52,84 +59,16 @@ namespace TwitchVods.Core
                 }
             }
 
-            await WriteIndexPageAsync(channels, settings.OutputDir);
+            await pageCreator.CreateIndexPageAsync(channels, settings.OutputDir);
 
             await Task.WhenAll(tasks);
         }
 
-        private static async Task<string[]> GetChannelsFromFile(Settings settings)
-        {
-            string fileContent;
-            using (var reader = new StreamReader(settings.ChannelsFilePath))
-            {
-                fileContent = await reader.ReadToEndAsync();
-            }
-
-            return fileContent.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
-                            .ToList()
-                            .Where(x => !x.StartsWith("//")).ToArray();
-        }
-
-        private static Settings GetSettings()
-        {
-            var currentDir = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-
-            using (var reader = new StreamReader(Path.Combine(currentDir, "settings.json")))
-            {
-                return JsonConvert.DeserializeObject<Settings>(reader.ReadToEnd());
-            }
-        }
-
-        private static async Task WriteChannelVideos(string channelName, Settings settings, IAsyncPolicy retryPolicy)
+        private static async Task<Channel> ChannelVideos(string channelName, Settings settings, IAsyncPolicy retryPolicy)
         {
             var client = new KrakenTwitchClient(channelName, settings, retryPolicy);
 
-            var channel = await client.GetChannelVideosAsync();
-
-            var model = new ChannelModel
-            {
-                Channel = channel,
-                GoogleAnalyticsTrackingId = settings.GoogleAnalyticsTrackingId,
-                TwitterHandle = settings.TwitterHandle,
-            };
-
-            var markup = await new ChannelGenerator().GenerateMarkupAsync(model);
-
-            var minifier = new HtmlMinifier();
-            var compressionResult = minifier.Minify(markup);
-
-            if (compressionResult.Errors.Any())
-                return;
-
-            using (var outputFile = new StreamWriter($"{settings.OutputDir}/{channelName.ToLower()}.html"))
-            {
-                await outputFile.WriteAsync(compressionResult.MinifiedContent);
-                await outputFile.FlushAsync();
-            }
-
-            new JsonFileOutput(channel, settings).WriteOutput();
-        }
-
-        private static async Task WriteIndexPageAsync(string[] channels, string outputPath)
-        {
-            var htmlGeneratory = new IndexGenerator();
-            var markup = await htmlGeneratory.GenerateMarkupAsync(new IndexModel { Channels = channels });
-
-            using (var indexFile = new StreamWriter($"{outputPath}/index.html"))
-            {
-                await indexFile.WriteAsync(markup);
-                await indexFile.FlushAsync();
-            }
-        }
-
-        private static IAsyncPolicy GetRetryPolicy()
-        {
-            const int maxRetries = 10;
-
-            return Policy.Handle<Exception>()
-                .WaitAndRetryAsync(
-                    maxRetries,
-                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            return await client.ChannelVideosAsync();
         }
     }
 }
