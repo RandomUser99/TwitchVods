@@ -25,6 +25,7 @@ namespace TwitchVods.Core.PageGeneration
                 Channel = channel,
                 GoogleAnalyticsTrackingId = settings.GoogleAnalyticsTrackingId,
                 TwitterHandle = settings.TwitterHandle,
+                RedditUsername = settings.RedditUsername
             };
 
             var markup = await new HtmlGenerator().GenerateMarkupAsync(model, "Templates/Channel.cshtml");

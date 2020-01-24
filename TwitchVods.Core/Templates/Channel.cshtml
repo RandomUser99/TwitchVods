@@ -32,6 +32,11 @@
             {
                 <p><a href="https://twitter.com/@Model.TwitterHandle">Contact me on Twitter</a></p>
             }
+
+            @if (!string.IsNullOrWhiteSpace(@Model.RedditUsername))
+            {
+                <p><a href="https://old.reddit.com/message/compose?to=@Model.RedditUsername&subject=tvods">Contact me on Reddit</a></p>
+            }
         </div>
     </div>
 
