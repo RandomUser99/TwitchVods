@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TwitchVods.Core.Models;
-using TwitchVods.Core.Output;
-using TwitchVods.Core.PageGeneration;
-using TwitchVods.Core.Twitch.Kraken;
 
 namespace TwitchVods.Core
 {
+    using Models;
+    using Output;
+    using PageGeneration;
+    using Twitch.Kraken;
+
     class Program
     {
         static void Main(string[] args)

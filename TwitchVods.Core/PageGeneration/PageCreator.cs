@@ -1,12 +1,13 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TwitchVods.Core.Models;
-using TwitchVods.Core.Templates;
 using WebMarkupMin.Core;
 
 namespace TwitchVods.Core.PageGeneration
 {
+    using Models;
+    using Templates;
+
     internal class PageCreator
     {
         private readonly HtmlGenerator _htmlGenerator;
@@ -28,7 +29,7 @@ namespace TwitchVods.Core.PageGeneration
                 RedditUsername = settings.RedditUsername
             };
 
-            var markup = await new HtmlGenerator().GenerateMarkupAsync(model, "Templates/Channel.cshtml");
+            var markup = await _htmlGenerator.GenerateMarkupAsync(model, "Templates/Channel.cshtml");
 
             var compressionResult = _minifier.Minify(markup);
 
