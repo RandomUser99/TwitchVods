@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using WebMarkupMin.Core;
 
 namespace TwitchVods.Core
 {
@@ -40,7 +41,7 @@ namespace TwitchVods.Core
         private static async Task ProcessWorkload(string[] channels, Settings settings)
         {
             var retryPolicy = Policies.RetryPolicy();
-            var pageCreator = new PageCreator();
+            var pageCreator = new PageCreator(new HtmlGenerator(), new HtmlMinifier());
             var tasks = new List<Task>();
 
             foreach (var channelName in channels)

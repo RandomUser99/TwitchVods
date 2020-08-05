@@ -13,10 +13,10 @@ namespace TwitchVods.Core.PageGeneration
         private readonly HtmlGenerator _htmlGenerator;
         private readonly HtmlMinifier _minifier;
 
-        public PageCreator()
+        public PageCreator(HtmlGenerator htmlGenerator, HtmlMinifier minifier)
         {
-            _htmlGenerator = new HtmlGenerator();
-            _minifier = new HtmlMinifier();
+            _htmlGenerator = htmlGenerator;
+            _minifier = minifier;
         }
 
         public async Task CreateChannelPageAsync(Channel channel, Settings settings)

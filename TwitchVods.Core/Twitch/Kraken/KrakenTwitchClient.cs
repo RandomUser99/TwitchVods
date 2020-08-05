@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Ardalis.GuardClauses;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Polly;
 using System;
@@ -8,10 +9,11 @@ using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TwitchVods.Core.Models;
 
 namespace TwitchVods.Core.Twitch.Kraken
 {
+    using Models;
+
     internal enum TwitchApiVersion
     {
         v3 = 3,
@@ -39,16 +41,15 @@ namespace TwitchVods.Core.Twitch.Kraken
 
         public KrakenTwitchClient(string channelName, Settings settings, IAsyncPolicy retryPolicy)
         {
-            _channelName = channelName ?? throw new ArgumentNullException();
+            Guard.Against.NullOrEmpty(channelName, nameof(channelName));
+            Guard.Against.Null(settings, nameof(settings));
+            Guard.Against.Null(retryPolicy, nameof(retryPolicy));
 
-            if (string.IsNullOrWhiteSpace(_channelName))
-                throw new ArgumentNullException();
+            _channelName = channelName;
+            _settings = settings;
+            _retryRetryPolicy = retryPolicy;
 
-            _settings = settings ?? throw new ArgumentNullException();
-            _retryRetryPolicy = retryPolicy ?? throw new ArgumentNullException();
-
-            if (string.IsNullOrEmpty(_channelUserId))
-                SetUserId();
+            SetUserId();
         }
 
         private void SetUserId()
@@ -100,6 +101,7 @@ namespace TwitchVods.Core.Twitch.Kraken
 
                 count = jsonData._total;
             }
+
             return count;
         }
 

@@ -6,7 +6,7 @@ namespace TwitchVods.Core.Twitch.Kraken
     internal class KrakenVideoResponse
     {
         public int _total { get; set; }
-        public List<KrakenVideo> videos { get; set; }
+        public IList<KrakenVideo> videos { get; set; }
 
         public class KrakenVideo
         {
