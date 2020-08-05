@@ -51,12 +51,6 @@ namespace TwitchVods.Core.Models
                 _games.Add(gameName);
         }
 
-        public void AddVideos(IEnumerable<Video> videos)
-        {
-            foreach (var video in videos)
-                AddVideo(video);
-        }
-
         public int TotalVideoCount => _videos.Count;
 
         public int TotalViewCount => _videos.Sum(x => x.Views);

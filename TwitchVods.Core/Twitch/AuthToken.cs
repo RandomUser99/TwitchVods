@@ -2,7 +2,7 @@
 
 namespace TwitchVods.Core.Twitch
 {
-    internal class TwitchAuthToken
+    internal class AuthToken
     {
         private DateTime _dateCreated;
 
@@ -10,9 +10,9 @@ namespace TwitchVods.Core.Twitch
         public int ExpiresInSeconds { get; private set; }
         public bool HasExpired => DateTime.Now >= _dateCreated.AddSeconds(ExpiresInSeconds);
 
-        public static TwitchAuthToken Create(string token, int expiresIn)
+        public static AuthToken Create(string token, int expiresIn)
         {
-            return new TwitchAuthToken
+            return new AuthToken
             {
                 AccessToken = token,
                 ExpiresInSeconds = expiresIn,

@@ -22,9 +22,9 @@ namespace TwitchVods.Core.Twitch.Clients
         private const int ObjectCountLimit = 100;
 
         private static string BaseUrl => "https://api.twitch.tv/helix";
-        private TwitchAuthToken _token;
+        private AuthToken _token;
 
-       public HelixTwitchClient(string channelName, Settings settings, IAsyncPolicy retryPolicy)
+        public HelixTwitchClient(string channelName, Settings settings, IAsyncPolicy retryPolicy)
         {
             Guard.Against.NullOrEmpty(channelName, nameof(channelName));
             Guard.Against.Null(settings, nameof(settings));
@@ -56,7 +56,7 @@ namespace TwitchVods.Core.Twitch.Clients
 
             dynamic jsonData = JObject.Parse(reader.ReadToEnd());
 
-            _token = TwitchAuthToken.Create(jsonData["access_token"].ToString(), int.Parse(jsonData["expires_in"].ToString()));
+            _token = AuthToken.Create(jsonData["access_token"].ToString(), int.Parse(jsonData["expires_in"].ToString()));
         }
 
         private void SetChannelUserId()
@@ -92,13 +92,17 @@ namespace TwitchVods.Core.Twitch.Clients
 
             var retrievedVideos = await _retryRetryPolicy.ExecuteAsync(async () => await GetVideosAsync(_settings.LimitVideos));
 
-            foreach (var video in retrievedVideos)
-            {
-                await _retryRetryPolicy.ExecuteAsync(async () =>
-                {
-                    await PopulateMarkersAsync(video);
-                });
-            }
+            // Markers cannot be retrieved unless you created them:
+            // https://dev.twitch.tv/docs/api/reference#get-stream-markers
+            // This has been raised as a request to be added to the Helix API.
+
+            //foreach (var video in retrievedVideos)
+            //{
+            //    await _retryRetryPolicy.ExecuteAsync(async () =>
+            //    {
+            //        await PopulateMarkersAsync(video);
+            //    });
+            //}
 
             channel.AddVideoRange(retrievedVideos);
 
