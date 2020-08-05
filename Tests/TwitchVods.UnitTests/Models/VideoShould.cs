@@ -29,8 +29,7 @@ namespace TwitchVods.UnitTests.Models
                 ViewCount = 100,
                 Title = RandomString(12),
                 Url = RandomString(15),
-                Id = RandomString(5),
-                UserName = RandomString(10)
+                Id = RandomString(5)
             };
 
             var test = Video.FromVideoData(videoData);
