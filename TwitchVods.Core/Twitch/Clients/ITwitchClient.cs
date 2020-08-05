@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using TwitchVods.Core.Models;
 
-namespace TwitchVods.Core.Twitch
+namespace TwitchVods.Core.Twitch.Clients
 {
     internal interface ITwitchClient
     {

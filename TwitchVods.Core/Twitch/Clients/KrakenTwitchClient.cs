@@ -1,19 +1,18 @@
-﻿using Ardalis.GuardClauses;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Polly;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Polly;
+using TwitchVods.Core.Models;
 
-namespace TwitchVods.Core.Twitch.Kraken
+namespace TwitchVods.Core.Twitch.Clients
 {
-    using Models;
-
     internal enum TwitchApiVersion
     {
         v3 = 3,
@@ -152,7 +151,7 @@ namespace TwitchVods.Core.Twitch.Kraken
             using (var reader = new StreamReader(webResponse.GetResponseStream()))
             {
                 var readerOutput = await reader.ReadToEndAsync();
-                var response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<KrakenVideoResponse>(readerOutput));
+                var response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<VideoResponse>(readerOutput));
 
                 foreach (var data in response.videos)
                 {
@@ -177,11 +176,11 @@ namespace TwitchVods.Core.Twitch.Kraken
 
             var webResponse = await request.GetResponseAsync();
 
-            KrakenMarkerResponse response;
+            MarkerResponse response;
             using (var reader = new StreamReader(webResponse.GetResponseStream()))
             {
                 var readerOutput = reader.ReadToEnd();
-                response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<KrakenMarkerResponse>(readerOutput));
+                response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<MarkerResponse>(readerOutput));
             }
 
             if (response.markers.game_changes == null)

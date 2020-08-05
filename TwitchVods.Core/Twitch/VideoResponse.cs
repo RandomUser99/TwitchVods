@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TwitchVods.Core.Twitch.Kraken
+namespace TwitchVods.Core.Twitch
 {
-    internal class KrakenVideoResponse
+    internal class VideoResponse
     {
         public int _total { get; set; }
-        public IList<KrakenVideo> videos { get; set; }
+        public IList<Video> videos { get; set; }
 
-        public class KrakenVideo
+        public class Video
         {
             public string title { get; set; }
             public object description { get; set; }

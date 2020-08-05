@@ -1,44 +1,18 @@
-﻿using Ardalis.GuardClauses;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Polly;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TwitchVods.Core.Twitch.Kraken;
+using Ardalis.GuardClauses;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Polly;
+using TwitchVods.Core.Models;
 
-namespace TwitchVods.Core.Twitch.Helix
+namespace TwitchVods.Core.Twitch.Clients
 {
-    using Models;
-
-    internal enum TwitchApiVersion
-    {
-        v3 = 3,
-        v5 = 5
-    }
-
-    internal class TwitchAuthToken
-    {
-        public string AccessToken { get; private set; }
-        public int ExpiresInSeconds { get; private set; }
-        public DateTime DateCreated { get; private set; }
-        public bool HasExpired => DateTime.Now >= DateCreated.AddSeconds(ExpiresInSeconds);
-
-        public static TwitchAuthToken Create(string token, int expiresIn)
-        {
-            return new TwitchAuthToken
-            {
-                AccessToken = token,
-                ExpiresInSeconds = expiresIn,
-                DateCreated = DateTime.Now
-            };
-        }
-    }
-
     internal class HelixTwitchClient : ITwitchClient
     {
         private readonly string _channelName;
@@ -70,7 +44,6 @@ namespace TwitchVods.Core.Twitch.Helix
             _settings = settings;
             _retryRetryPolicy = retryPolicy;
 
-            Authenticate();
             SetChannelUserId();
         }
 
@@ -88,7 +61,6 @@ namespace TwitchVods.Core.Twitch.Helix
             dynamic jsonData = JObject.Parse(reader.ReadToEnd());
 
             _token = TwitchAuthToken.Create(jsonData["access_token"].ToString(), int.Parse(jsonData["expires_in"].ToString()));
-            _channelUserId = jsonData["users"][0]["_id"].ToString();
         }
 
         private void SetChannelUserId()
@@ -98,7 +70,7 @@ namespace TwitchVods.Core.Twitch.Helix
 
             var apiEndpoint = $"{BaseUrl}/users?login={_channelName}";
 
-            var request = CreateWebRequest(apiEndpoint, TwitchApiVersion.v5);
+            var request = CreateWebRequest(apiEndpoint);
 
             var webResponse = request.GetResponse();
 
@@ -109,15 +81,17 @@ namespace TwitchVods.Core.Twitch.Helix
             }
         }
 
-        private HttpWebRequest CreateWebRequest(string apiEndpoint, TwitchApiVersion apiVersion)
+        private HttpWebRequest CreateWebRequest(string apiEndpoint)
         {
             var request = (HttpWebRequest)WebRequest.Create(apiEndpoint);
 
-            // Need to specify the version of the API to use.
-            //request.Accept = $@"application/vnd.twitchtv.{apiVersion}+json";
+            if (_token == null || _token.HasExpired)
+            {
+                Authenticate();
+            }
 
             // Need to specify the client ID https://dev.twitch.tv/docs/api#step-1-setup
-            request.Headers.Add("Client-ID", _settings.TwitchApiClientId);
+            request.Headers.Add("Authorization", $"Bearer {_token.AccessToken}");
 
             return request;
         }
@@ -129,7 +103,7 @@ namespace TwitchVods.Core.Twitch.Helix
             const int offset = 0;
 
             var apiEndpoint = GetChannelVideosEndpoint(limit, offset);
-            var request = CreateWebRequest(apiEndpoint, TwitchApiVersion.v5);
+            var request = CreateWebRequest(apiEndpoint);
             var webResponse = await request.GetResponseAsync();
             int count;
 
@@ -183,7 +157,7 @@ namespace TwitchVods.Core.Twitch.Helix
         {
             var apiEndpoint = GetChannelVideosEndpoint(limit, offset);
 
-            var request = CreateWebRequest(apiEndpoint, TwitchApiVersion.v5);
+            var request = CreateWebRequest(apiEndpoint);
 
             var webResponse = await request.GetResponseAsync();
             var videos = new List<Video>();
@@ -191,7 +165,7 @@ namespace TwitchVods.Core.Twitch.Helix
             using (var reader = new StreamReader(webResponse.GetResponseStream()))
             {
                 var readerOutput = await reader.ReadToEndAsync();
-                var response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<KrakenVideoResponse>(readerOutput));
+                var response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<VideoResponse>(readerOutput));
 
                 foreach (var data in response.videos)
                 {
@@ -212,15 +186,15 @@ namespace TwitchVods.Core.Twitch.Helix
         {
             var apiEndpoint = GetVideoMarkersEndpoint(video.Id);
 
-            var request = CreateWebRequest(apiEndpoint, TwitchApiVersion.v5);
+            var request = CreateWebRequest(apiEndpoint);
 
             var webResponse = await request.GetResponseAsync();
 
-            KrakenMarkerResponse response;
+            MarkerResponse response;
             using (var reader = new StreamReader(webResponse.GetResponseStream()))
             {
                 var readerOutput = reader.ReadToEnd();
-                response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<KrakenMarkerResponse>(readerOutput));
+                response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<MarkerResponse>(readerOutput));
             }
 
             if (response.markers.game_changes == null)

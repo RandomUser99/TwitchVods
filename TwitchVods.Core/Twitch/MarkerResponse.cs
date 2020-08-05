@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace TwitchVods.Core.Twitch.Kraken
+namespace TwitchVods.Core.Twitch
 {
-    internal class KrakenMarkerResponse
+    internal class MarkerResponse
     {
         public string vod_id { get; set; }
         public Markers markers { get; set; }

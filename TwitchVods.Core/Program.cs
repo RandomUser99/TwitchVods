@@ -2,13 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TwitchVods.Core.Twitch.Clients;
 
 namespace TwitchVods.Core
 {
     using Models;
     using Output;
     using PageGeneration;
-    using Twitch.Helix;
 
     class Program
     {
