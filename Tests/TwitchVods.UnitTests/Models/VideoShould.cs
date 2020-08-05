@@ -1,7 +1,7 @@
-﻿using System;
-using Shouldly;
+﻿using Shouldly;
+using System;
+using Twitch.Net.Models;
 using TwitchVods.Core.Models;
-using TwitchVods.Core.Twitch;
 using Xunit;
 
 namespace TwitchVods.UnitTests.Models
@@ -13,7 +13,7 @@ namespace TwitchVods.UnitTests.Models
         [Fact]
         public void create_from_video_data()
         {
-            var videoData = new VideoData
+            var videoData = new HelixVideo
             {
                 CreatedAt = DateTime.Now,
                 Duration = "1h2m3s",
