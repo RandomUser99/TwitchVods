@@ -14,6 +14,7 @@ namespace TwitchVods.Core
         public bool LimitVideos { get; set; }
         public string GoogleAnalyticsTrackingId { get; set; }
         public string TwitchApiClientId { get; set; }
+        public string TwitchApiClientSecret { get; set; }
         public string RedditUsername { get; set; }
         public string TwitterHandle { get; set; }
 

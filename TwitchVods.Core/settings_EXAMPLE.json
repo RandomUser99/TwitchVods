@@ -3,7 +3,8 @@
   "ChannelsFilePath": "channels.txt",
   "LimitVideos": "false", // If set to true, will limit the amount of videos fetched to 50 for each channel.
   "GoogleAnalyticsTrackingId": "UA-0000000000-0",
-  "TwitchApiClientId": "ZZZZAAAaaaZZZaaaZZZaaaZZZ", // https://blog.twitch.tv/client-id-required-for-kraken-api-calls-afbb8e95f843,
+  "TwitchApiClientId": "ZZZZAAAaaaZZZaaaZZZaaaZZZ",
+  "TwitchApiClientSecret": "ZZZZAAAaaaZZZaaaZZZaaaZZZ",
   "TwitterHandle": "<user>"
 
 }

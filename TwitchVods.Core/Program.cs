@@ -9,8 +9,8 @@ namespace TwitchVods.Core
     using Models;
     using Output;
     using PageGeneration;
-    using Twitch.Kraken;
-
+    using Twitch.Helix;
+    
     class Program
     {
         static void Main(string[] args)
@@ -68,7 +68,7 @@ namespace TwitchVods.Core
 
         private static async Task<Channel> ChannelVideos(string channelName, Settings settings, IAsyncPolicy retryPolicy)
         {
-            var client = new KrakenTwitchClient(channelName, settings, retryPolicy);
+            var client = new HelixTwitchClient(channelName, settings, retryPolicy);
 
             return await client.ChannelVideosAsync();
         }
