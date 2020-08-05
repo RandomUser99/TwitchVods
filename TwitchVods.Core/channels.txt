@@ -1,4 +1,5 @@
-﻿lirik
+﻿shortyyguy
+//lirik
 //dansgaming
 //faraazkhan
-manvsgame
+//manvsgame

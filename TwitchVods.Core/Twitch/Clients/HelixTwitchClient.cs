@@ -1,18 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Polly;
-using TwitchVods.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace TwitchVods.Core.Twitch.Clients
 {
+    using Models;
+
     internal class HelixTwitchClient : ITwitchClient
     {
         private readonly string _channelName;
@@ -23,15 +25,10 @@ namespace TwitchVods.Core.Twitch.Clients
         private static string BaseUrl => "https://api.twitch.tv/helix";
         private TwitchAuthToken _token;
 
-        private string GetChannelVideosEndpoint(int limit, int offset)
+        private string GetChannelVideosEndpoint(string after)
         {
-            return $"{BaseUrl}/videos?user_id={_settings}&type=archive&period=all";
+            return $"{BaseUrl}/videos?user_id={_channelUserId}&type=archive&period=all&after={after}";
             //return $"{BaseUrl}/channels/{_channelUserId}/videos?broadcast_type=archive&limit={limit}&offset={offset}";
-        }
-
-        private static string GetVideoMarkersEndpoint(string videoId)
-        {
-            return $"{BaseUrl}/videos/{videoId}/markers?api_version=5";
         }
 
         public HelixTwitchClient(string channelName, Settings settings, IAsyncPolicy retryPolicy)
@@ -44,6 +41,12 @@ namespace TwitchVods.Core.Twitch.Clients
             _settings = settings;
             _retryRetryPolicy = retryPolicy;
 
+            Init();
+        }
+
+        private void Init()
+        {
+            Authenticate();
             SetChannelUserId();
         }
 
@@ -74,111 +77,101 @@ namespace TwitchVods.Core.Twitch.Clients
 
             var webResponse = request.GetResponse();
 
-            using (var reader = new StreamReader(webResponse.GetResponseStream()))
-            {
-                dynamic jsonData = JObject.Parse(reader.ReadToEnd());
-                _channelUserId = jsonData["users"][0]["_id"].ToString();
-            }
+            using var reader = new StreamReader(webResponse.GetResponseStream());
+
+            dynamic jsonData = JObject.Parse(reader.ReadToEnd());
+            _channelUserId = jsonData["data"][0]["id"].ToString();
         }
 
         private HttpWebRequest CreateWebRequest(string apiEndpoint)
         {
             var request = (HttpWebRequest)WebRequest.Create(apiEndpoint);
 
-            if (_token == null || _token.HasExpired)
-            {
-                Authenticate();
-            }
-
             // Need to specify the client ID https://dev.twitch.tv/docs/api#step-1-setup
+            request.Headers.Add("Client-ID", _settings.TwitchApiClientId);
             request.Headers.Add("Authorization", $"Bearer {_token.AccessToken}");
 
             return request;
         }
 
-        private async Task<int> GetTotalVideoCountAsync()
-        {
-            // Only need one vod to get the total available
-            const int limit = 1;
-            const int offset = 0;
+        //private async Task<int> GetTotalVideoCountAsync()
+        //{
+        //    // Only need one vod to get the total available
+        //    const int limit = 1;
+        //    const int offset = 0;
 
-            var apiEndpoint = GetChannelVideosEndpoint(limit, offset);
-            var request = CreateWebRequest(apiEndpoint);
-            var webResponse = await request.GetResponseAsync();
-            int count;
+        //    var apiEndpoint = GetChannelVideosEndpoint(limit, offset);
+        //    var request = CreateWebRequest(apiEndpoint);
+        //    var webResponse = await request.GetResponseAsync();
+        //    int count;
 
-            using (var reader = new StreamReader(webResponse.GetResponseStream()))
-            {
-                var readerOutput = await reader.ReadToEndAsync();
-                dynamic jsonData = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject(readerOutput));
+        //    using var reader = new StreamReader(webResponse.GetResponseStream());
 
-                count = jsonData._total;
-            }
+        //    var readerOutput = await reader.ReadToEndAsync();
+        //    dynamic jsonData = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject(readerOutput));
 
-            return count;
-        }
+        //    count = jsonData._total;
+
+        //    return count;
+        //}
 
         public async Task<Channel> ChannelVideosAsync()
         {
             var channel = Channel.Create(_channelName);
 
-            var totalVideos = await _retryRetryPolicy.ExecuteAsync(async () => await GetTotalVideoCountAsync());
+            //  var totalVideos = await _retryRetryPolicy.ExecuteAsync(async () => await GetTotalVideoCountAsync());
 
-            const int limit = 50;
+            //const int limit = 50;
 
-            for (var offset = 0; offset < totalVideos; offset += limit)
+            do
             {
-                var retrievedVideos = await _retryRetryPolicy.ExecuteAsync(async () => await GetVideosAsync(limit, offset));
+                var retrievedVideos =
+                    await _retryRetryPolicy.ExecuteAsync(async () => await GetVideosAsync(_settings.LimitVideos));
 
                 foreach (var video in retrievedVideos)
                 {
                     await _retryRetryPolicy.ExecuteAsync(async () =>
-                   {
-                       await PopulateMarkersAsync(video);
-                   });
+                    {
+                        await PopulateMarkersAsync(video);
+                    });
                 }
 
-                if (retrievedVideos.Count > limit)
-                    throw new ApplicationException(
-                        "Twitch API is returning bad data. It is returning more records than the limit value.");
 
                 channel.AddVideoRange(retrievedVideos);
 
-                Console.WriteLine("{0} Retrieved: {1} of {2} ", _channelName, channel.TotalVideoCount, totalVideos);
+            } while (true);
 
-                // If LimitVideos is true, it will bail out. Used for testing purposes.
-                if (_settings.LimitVideos)
-                    break;
-            }
             return channel;
         }
 
-        private async Task<List<Video>> GetVideosAsync(int limit, int offset = 0)
+        private async Task<List<Video>> GetVideosAsync(bool limitVideos)
         {
-            var apiEndpoint = GetChannelVideosEndpoint(limit, offset);
-
-            var request = CreateWebRequest(apiEndpoint);
-
-            var webResponse = await request.GetResponseAsync();
             var videos = new List<Video>();
+            var cursor = string.Empty;
 
-            using (var reader = new StreamReader(webResponse.GetResponseStream()))
+            do
             {
+                var apiEndpoint = GetChannelVideosEndpoint(cursor);
+                var request = CreateWebRequest(apiEndpoint);
+
+                var webResponse = await request.GetResponseAsync();
+                using var reader = new StreamReader(webResponse.GetResponseStream());
+
                 var readerOutput = await reader.ReadToEndAsync();
+
                 var response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<VideoResponse>(readerOutput));
+                videos.AddRange(response.Videos.Select(Video.FromVideoData));
+                cursor = response.Pagination.Cursor;
 
-                foreach (var data in response.videos)
+                Console.WriteLine("{0} Retrieved: {1}", _channelName, videos.Count);
+
+                if (limitVideos)
                 {
-                    var id = Regex.Replace(data._id, "[^0-9]+", string.Empty);
-
-                    DateTime.TryParse(data.created_at.ToString(), CultureInfo.CurrentCulture, DateTimeStyles.None, out var dateValue);
-
-
-                    var broadcastId = long.Parse(data.broadcast_id.ToString());
-                    var video = Video.Create(id, data.title, broadcastId, dateValue, data.game, data.length, data.url, data.views);
-                    videos.Add(video);
+                    break;
                 }
-            }
+
+            } while (!string.IsNullOrEmpty(cursor));
+
             return videos;
         }
 
@@ -193,7 +186,7 @@ namespace TwitchVods.Core.Twitch.Clients
             MarkerResponse response;
             using (var reader = new StreamReader(webResponse.GetResponseStream()))
             {
-                var readerOutput = reader.ReadToEnd();
+                var readerOutput = await reader.ReadToEndAsync();
                 response = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<MarkerResponse>(readerOutput));
             }
 
@@ -203,6 +196,11 @@ namespace TwitchVods.Core.Twitch.Clients
             foreach (var marker in response.markers.game_changes)
             {
                 video.AddMarker(Marker.Create(marker.label, marker.time));
+            }
+
+            static string GetVideoMarkersEndpoint(string videoId)
+            {
+                return $"{BaseUrl}/videos/{videoId}/markers?api_version=5";
             }
         }
     }

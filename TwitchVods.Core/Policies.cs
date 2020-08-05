@@ -7,7 +7,7 @@ namespace TwitchVods.Core
     {
         internal static IAsyncPolicy RetryPolicy()
         {
-            const int maxRetries = 10;
+            const int maxRetries = 2;
 
             return Policy.Handle<Exception>()
                 .WaitAndRetryAsync(
