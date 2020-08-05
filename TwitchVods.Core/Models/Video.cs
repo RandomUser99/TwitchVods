@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Twitch.Net.Models;
 
 namespace TwitchVods.Core.Models
 {
@@ -22,6 +23,20 @@ namespace TwitchVods.Core.Models
         public IEnumerable<Marker> Markers => _markers.OrderBy(x => x.TimeSeconds).ToList();
 
         private Video() { }
+
+        public static Video FromVideoData(HelixVideo data)
+        {
+            return new Video
+            {
+                Id = data.Id,
+                Title = data.Title,
+                CreatedAt = data.CreatedAt,
+                Url = data.Url,
+                Duration = data.Duration,
+                Views = data.ViewCount,
+                Length = DurationParser.ParseToLenthInMinutes(data.Duration)
+            };
+        }
 
         public static Video FromVideoData(VideoData data)
         {
