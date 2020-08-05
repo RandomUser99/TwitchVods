@@ -1,7 +1,5 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using WebMarkupMin.Core;
 
 namespace TwitchVods.Core.PageGeneration
 {
@@ -11,9 +9,9 @@ namespace TwitchVods.Core.PageGeneration
     internal class PageCreator
     {
         private readonly HtmlGenerator _htmlGenerator;
-        private readonly HtmlMinifier _minifier;
+        private readonly IHtmlMinifierAdapter _minifier;
 
-        public PageCreator(HtmlGenerator htmlGenerator, HtmlMinifier minifier)
+        public PageCreator(HtmlGenerator htmlGenerator, IHtmlMinifierAdapter minifier)
         {
             _htmlGenerator = htmlGenerator;
             _minifier = minifier;
@@ -33,7 +31,7 @@ namespace TwitchVods.Core.PageGeneration
 
             var compressionResult = _minifier.Minify(markup);
 
-            if (compressionResult.Errors.Any())
+            if (compressionResult.HasErrors)
                 return;
 
             await WriteToFileAsync($"{settings.OutputDir}/{channel.Name.ToLower()}.html", compressionResult.MinifiedContent);

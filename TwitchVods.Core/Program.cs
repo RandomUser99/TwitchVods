@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using WebMarkupMin.Core;
 
 namespace TwitchVods.Core
 {
@@ -10,7 +9,7 @@ namespace TwitchVods.Core
     using Output;
     using PageGeneration;
     using Twitch.Helix;
-    
+
     class Program
     {
         static void Main(string[] args)
@@ -41,7 +40,7 @@ namespace TwitchVods.Core
         private static async Task ProcessWorkload(string[] channels, Settings settings)
         {
             var retryPolicy = Policies.RetryPolicy();
-            var pageCreator = new PageCreator(new HtmlGenerator(), new HtmlMinifier());
+            var pageCreator = new PageCreator(new HtmlGenerator(), new HtmlMinifierAdapter());
             var tasks = new List<Task>();
 
             foreach (var channelName in channels)
