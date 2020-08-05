@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Twitch.Net;
 using Twitch.Net.Models;
-using TwitchVods.Core.Models;
 
 namespace TwitchVods.Core.Twitch
 {
+    using Models;
+
     public class VideoFetcher
     {
-        private readonly TwitchApi _api;
+        private readonly TwitchApi _client;
+        private readonly bool _limitVideos;
 
-        public VideoFetcher(TwitchApi api)
+        public VideoFetcher(TwitchApi client, bool limitVideos)
         {
-            _api = api;
+            _client = client;
+            _limitVideos = limitVideos;
         }
 
         public async Task<Channel> ChannelVideosAsync(HelixUser channelUser)
@@ -25,17 +26,7 @@ namespace TwitchVods.Core.Twitch
 
             var retrievedVideos = await GetVideosAsync(channelUser);
 
-            // Markers cannot be retrieved unless you created them:
-            // https://dev.twitch.tv/docs/api/reference#get-stream-markers
-            // This has been raised as a request to be added to the Helix API.
-
-            //foreach (var video in retrievedVideos)
-            //{
-            //    await _retryRetryPolicy.ExecuteAsync(async () =>
-            //    {
-            //        await PopulateMarkersAsync(video);
-            //    });
-            //}
+            // need to populate markers when twitch sort out getting markers for a video ...
 
             channel.AddVideoRange(retrievedVideos);
 
@@ -49,12 +40,17 @@ namespace TwitchVods.Core.Twitch
 
             do
             {
-                var response = await _api.GetVideosFromUser(channelUser.Id, after: cursor, type: "archive", first: 100);
+                var response = await _client.GetVideosFromUser(channelUser.Id, after: cursor, type: "archive", first: 100);
                 var videosData = response.Data.Select(Video.FromVideoData);
                 videos.AddRange(videosData);
                 cursor = response.Pagination.Cursor;
 
                 Console.WriteLine("{0} Retrieved: {1}", channelUser.DisplayName, videos.Count);
+
+                if (_limitVideos)
+                {
+                    break;
+                }
 
             } while (!string.IsNullOrEmpty(cursor));
 

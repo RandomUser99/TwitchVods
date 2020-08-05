@@ -12,10 +12,12 @@ namespace TwitchVods.Core.Twitch
 
     internal class ChannelProcessor
     {
+        private readonly Settings _settings;
         private readonly TwitchApi _twitchClient;
 
         public ChannelProcessor(Settings settings)
         {
+            _settings = settings;
             _twitchClient = new TwitchApiBuilder(settings.TwitchApiClientId)
                 .WithClientSecret(settings.TwitchApiClientSecret)
                 .WithRateLimitBypass()
@@ -24,7 +26,6 @@ namespace TwitchVods.Core.Twitch
 
         public async Task ProcessWorkload(string[] channels, Settings settings)
         {
-
             var pageCreator = new PageCreator(new HtmlGenerator(), new HtmlMinifierAdapter());
             var tasks = new List<Task>();
 
@@ -52,9 +53,9 @@ namespace TwitchVods.Core.Twitch
             await Task.WhenAll(tasks);
         }
 
-        private async Task<Channel> ChannelVideos( HelixUser channelUser)
+        private async Task<Channel> ChannelVideos(HelixUser channelUser)
         {
-            var videoFetcher = new VideoFetcher(_twitchClient);
+            var videoFetcher = new VideoFetcher(_twitchClient, _settings.LimitVideos);
             return await videoFetcher.ChannelVideosAsync(channelUser);
         }
     }

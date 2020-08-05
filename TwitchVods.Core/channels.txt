@@ -1,5 +1,5 @@
-﻿//shortyyguy
+﻿shortyyguy
 lirik
-//dansgaming
-//faraazkhan
-//manvsgame
+dansgaming
+faraazkhan
+manvsgame

@@ -38,20 +38,6 @@ namespace TwitchVods.Core.Models
             };
         }
 
-        public static Video FromVideoData(VideoData data)
-        {
-            return new Video
-            {
-                Id = data.Id,
-                Title = data.Title,
-                CreatedAt = data.CreatedAt,
-                Url = data.Url,
-                Duration = data.Duration,
-                Views = data.ViewCount,
-                Length = DurationParser.ParseToLenthInMinutes(data.Duration)
-            };
-        }
-
         public void AddMarker(Marker marker)
         {
             if (!_markers.Any())
