@@ -45,7 +45,7 @@ namespace TwitchVods.Core.Twitch.Clients
 
         private void Authenticate()
         {
-            var apiEndpoint = $"https://id.twitch.tv/oauth2/token?client_id={_settings.TwitchApiClientId}&client_secret={_settings.TwitchApiClientSecret}&grant_type=client_credentials";
+            var apiEndpoint = $"https://id.twitch.tv/oauth2/token?client_id={_settings.TwitchApiClientId}&client_secret={_settings.TwitchApiClientSecret}&grant_type=client_credentials&scope=user:read:broadcast";
 
             var request = (HttpWebRequest)WebRequest.Create(apiEndpoint);
             request.Method = "POST";

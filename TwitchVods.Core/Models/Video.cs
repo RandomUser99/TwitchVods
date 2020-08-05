@@ -13,7 +13,7 @@ namespace TwitchVods.Core.Models
         public string Title { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public string Game { get; private set; }
-        public int Length => TimeSpan.Parse(Duration.Replace("h", ":").Replace("m", ":").Replace("s", ":")).Minutes;
+        public int Length => TimeSpan.Parse(Duration.Replace("h", ":").Replace("m", ":").Replace("s", string.Empty)).Minutes;
         public string Url { get; private set; }
         public int Views { get; private set; }
         public string Duration{ get; private set; }
@@ -34,31 +34,6 @@ namespace TwitchVods.Core.Models
                 Views = data.ViewCount,
             };
         }
-
-        //public static Video Create(string id, string title, DateTime createdAt, string game, string duration, string url, int views)
-        //{
-        //    return new Video
-        //    {
-        //        Id =  id, 
-        //        Title = title,
-        //        CreatedAt = createdAt,
-        //        Game = game,
-        //        Duration = duration,
-        //        Url = url, 
-        //        Views = views
-        //    };
-        //}
-
-        //public string RunTime
-        //{
-        //    get
-        //    {
-        //        var timeSpan = TimeSpan.FromSeconds(Length);
-        //        return $"{timeSpan.Hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
-        //    }
-        //}
-
-       // public int RuntimeMins => TimeSpan.FromSeconds(Length).Minutes;
 
         public static int LengthFromDateTimeString(string runTime)
         {

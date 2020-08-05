@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitchVods.Core", "TwitchVods.Core\TwitchVods.Core.csproj", "{948E298C-04A7-4ACD-9977-178A61F6C02B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwitchVods.Core", "TwitchVods.Core\TwitchVods.Core.csproj", "{948E298C-04A7-4ACD-9977-178A61F6C02B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitchVods.UnitTests", "Tests\TwitchVods.UnitTests\TwitchVods.UnitTests.csproj", "{84FE180C-996A-4B4A-8C97-F6001F6133D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{05C32A6A-1980-40CE-86C5-15DED3374BB0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0799C985-B2DA-4BCD-975D-C39D0BEAE713}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +21,17 @@ Global
 		{948E298C-04A7-4ACD-9977-178A61F6C02B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{948E298C-04A7-4ACD-9977-178A61F6C02B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{948E298C-04A7-4ACD-9977-178A61F6C02B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84FE180C-996A-4B4A-8C97-F6001F6133D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84FE180C-996A-4B4A-8C97-F6001F6133D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84FE180C-996A-4B4A-8C97-F6001F6133D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84FE180C-996A-4B4A-8C97-F6001F6133D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{948E298C-04A7-4ACD-9977-178A61F6C02B} = {05C32A6A-1980-40CE-86C5-15DED3374BB0}
+		{84FE180C-996A-4B4A-8C97-F6001F6133D8} = {0799C985-B2DA-4BCD-975D-C39D0BEAE713}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D505C6BE-BEAA-476C-929F-45B598E58DF3}
