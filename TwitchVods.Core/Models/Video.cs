@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TwitchVods.Core.Twitch;
 
 namespace TwitchVods.Core.Models
 {
+    using Twitch;
+
     public class Video
     {
         private readonly IList<Marker> _markers = new List<Marker>();
@@ -13,10 +14,10 @@ namespace TwitchVods.Core.Models
         public string Title { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public string Game { get; private set; }
-        public int Length => TimeSpan.Parse(Duration.Replace("h", ":").Replace("m", ":").Replace("s", string.Empty)).Minutes;
+        public int Length { get; private set; }
         public string Url { get; private set; }
         public int Views { get; private set; }
-        public string Duration{ get; private set; }
+        public string Duration { get; private set; }
 
         public IEnumerable<Marker> Markers => _markers.OrderBy(x => x.TimeSeconds).ToList();
 
@@ -32,14 +33,8 @@ namespace TwitchVods.Core.Models
                 Url = data.Url,
                 Duration = data.Duration,
                 Views = data.ViewCount,
+                Length = DurationParser.ParseToLenthInMinutes(data.Duration)
             };
-        }
-
-        public static int LengthFromDateTimeString(string runTime)
-        {
-            var length = TimeSpan.Parse(runTime).TotalSeconds;
-            var lengthInt = int.Parse(length.ToString());
-            return lengthInt;
         }
 
         public void AddMarker(Marker marker)

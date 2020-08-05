@@ -11,15 +11,6 @@ namespace TwitchVods.UnitTests.Models
     public class VideoShould
     {
         [Fact]
-        public void calculate_correct_video_length()
-        {
-            var video = Video.FromVideoData(new VideoData { Duration = "7h20m12s" });
-
-            var expected = new TimeSpan(0, 7, 20, 12).Minutes;
-            video.Length.ShouldBe(expected);
-        }
-
-        [Fact]
         public void create_from_video_data()
         {
             var videoData = new VideoData
