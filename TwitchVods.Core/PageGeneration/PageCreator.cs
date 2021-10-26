@@ -21,6 +21,11 @@ namespace TwitchVods.Core.PageGeneration
 
         public async Task CreateChannelPageAsync(Channel channel, Settings settings)
         {
+            if (channel.TotalVideoCount == 0)
+            {
+                return;
+            }
+
             var model = new ChannelModel
             {
                 Channel = channel,

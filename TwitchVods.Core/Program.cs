@@ -1,6 +1,7 @@
 ﻿using Polly;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WebMarkupMin.Core;
 
@@ -51,8 +52,11 @@ namespace TwitchVods.Core
                     tasks.Add(Task.Run(async () =>
                     {
                         var channel = await ChannelVideos(channelName.ToUpper(), settings, retryPolicy);
-                        await pageCreator.CreateChannelPageAsync(channel, settings);
-                        new JsonFileOutput(channel, settings).WriteOutput();
+                        if (channel.TotalVideoCount > 0)
+                        {
+                            await pageCreator.CreateChannelPageAsync(channel, settings);
+                            new JsonFileOutput(channel, settings).WriteOutput();
+                        }
                     }));
                 }
                 catch (Exception e)
