@@ -24,7 +24,7 @@ namespace TwitchVods.Core.PageGeneration
             var currentDir = Directory.GetCurrentDirectory();
 
             return new RazorLightEngineBuilder()
-                .UseFilesystemProject(currentDir)
+                .UseFileSystemProject(currentDir)
                 .UseCachingProvider(new MemoryCachingProvider())
                 .Build();
         }
