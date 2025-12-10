@@ -1,4 +1,7 @@
 # TwitchVods
+
+THIS REPOSITORY HAS BEEN ARCHIVED AND IS NO LONGER MAINTAINED.
+
 A console app which pulls all of the past broadcast data from the Twitch.tv API for specified channels and creates webpages from the data. 
 
 It creates pages such as this: https://tvods.se/v/lirik.html
